@@ -11,7 +11,8 @@ import http from 'http';
 import {
     ANTIGRAVITY_ENDPOINT_FALLBACKS,
     ANTIGRAVITY_HEADERS,
-    OAUTH_CONFIG
+    OAUTH_CONFIG,
+    OAUTH_REDIRECT_URI
 } from './constants.js';
 
 /**
