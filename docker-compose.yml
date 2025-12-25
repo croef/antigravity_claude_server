@@ -1,0 +1,36 @@
+# Antigravity Claude Proxy - Docker Compose configuration
+# Usage: docker-compose up -d
+
+services:
+  antigravity-claude-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: antigravity-claude-proxy
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - PORT=8080
+      # Uncomment and set if needed:
+      # - DEBUG=1
+    volumes:
+      # Persist account configuration
+      - antigravity-config:/home/nodejs/.config/antigravity-proxy
+    networks:
+      - antigravity-network
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  antigravity-config:
+    driver: local
+
+networks:
+  antigravity-network:
+    driver: bridge

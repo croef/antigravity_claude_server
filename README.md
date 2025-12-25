@@ -166,6 +166,92 @@ curl http://localhost:8080/accounts
 
 ---
 
+## Docker
+
+### Using Docker Compose (Recommended)
+
+```bash
+# Build and start the container
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+
+# Restart the container
+docker-compose restart
+```
+
+The service will be available at `http://localhost:8080`.
+
+Account configuration is persisted in a Docker volume named `antigravity-config`.
+
+### Using Docker Directly
+
+```bash
+# Build the image
+docker build -t antigravity-claude-proxy .
+
+# Run the container
+docker run -d \
+  --name antigravity-claude-proxy \
+  -p 8080:8080 \
+  -v antigravity-config:/home/nodejs/.config/antigravity-proxy \
+  --restart unless-stopped \
+  antigravity-claude-proxy
+
+# View logs
+docker logs -f antigravity-claude-proxy
+
+# Stop the container
+docker stop antigravity-claude-proxy
+```
+
+### Pulling from GitHub Container Registry
+
+Pre-built images are available on GHCR:
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/badri-s2001/antigravity_claude_server:latest
+
+# Run the container
+docker run -d \
+  --name antigravity-claude-proxy \
+  -p 8080:8080 \
+  -v antigravity-config:/home/nodejs/.config/antigravity-proxy \
+  ghcr.io/badri-s2001/antigravity_claude_server:latest
+```
+
+### Adding Accounts in Docker
+
+Since the container runs non-root, you'll need to add accounts differently:
+
+**Option 1: Mount account config from host**
+
+```bash
+# Add accounts on host first
+npm run accounts:add
+
+# Then mount the config directory
+docker run -d \
+  --name antigravity-claude-proxy \
+  -p 8080:8080 \
+  -v ~/.config/antigravity-proxy:/home/nodejs/.config/antigravity-proxy \
+  ghcr.io/badri-s2001/antigravity_claude_server:latest
+```
+
+**Option 2: Use docker-compose exec**
+
+```bash
+# Execute the accounts CLI inside the running container
+docker-compose exec antigravity-claude-proxy node src/accounts-cli.js add
+```
+
+---
+
 ## Testing
 
 Run the test suite (requires server running):
