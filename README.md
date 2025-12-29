@@ -207,6 +207,8 @@ antigravity-claude-proxy start
 claude
 ```
 
+> **Note:** If Claude Code asks you to select a login method, add `"hasCompletedOnboarding": true` to `~/.claude.json` (macOS/Linux) or `%USERPROFILE%\.claude.json` (Windows), then restart your terminal and try again.
+
 ---
 
 ## Available Models
