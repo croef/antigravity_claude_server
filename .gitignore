@@ -12,6 +12,7 @@ log.txt
 # IDE
 .vscode/
 .idea/
+.history/
 
 # Local config (may contain tokens)
 .claude/

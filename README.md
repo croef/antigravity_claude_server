@@ -1,6 +1,14 @@
 # Antigravity Claude Proxy
 
-A proxy server that exposes an **Anthropic-compatible API** backed by **Antigravity's Cloud Code**, letting you use Claude models like sonnet and opus with **Claude Code CLI**.
+[![npm version](https://img.shields.io/npm/v/antigravity-claude-proxy.svg)](https://www.npmjs.com/package/antigravity-claude-proxy)
+[![npm downloads](https://img.shields.io/npm/dm/antigravity-claude-proxy.svg)](https://www.npmjs.com/package/antigravity-claude-proxy)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+<a href="https://buymeacoffee.com/badrinarayanans" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" height="50"></a>
+
+A proxy server that exposes an **Anthropic-compatible API** backed by **Antigravity's Cloud Code**, letting you use Claude and Gemini models with **Claude Code CLI**.
+
+![Antigravity Claude Proxy Banner](images/banner.png)
 
 ## How It Works
 
@@ -25,15 +33,33 @@ A proxy server that exposes an **Anthropic-compatible API** backed by **Antigrav
 
 ---
 
-## Quick Start
+## Installation
 
-### 1. Install Dependencies
+### Option 1: npm (Recommended)
 
 ```bash
-npm install
+# Run directly with npx (no install needed)
+npx antigravity-claude-proxy@latest start
+
+# Or install globally
+npm install -g antigravity-claude-proxy@latest
+antigravity-claude-proxy start
 ```
 
-### 2. Add Account(s)
+### Option 2: Clone Repository
+
+```bash
+git clone https://github.com/badri-s2001/antigravity-claude-proxy.git
+cd antigravity-claude-proxy
+npm install
+npm start
+```
+
+---
+
+## Quick Start
+
+### 1. Add Account(s)
 
 You have two options:
 
@@ -43,43 +69,74 @@ If you have Antigravity installed and logged in, the proxy will automatically ex
 
 **Option B: Add Google Accounts via OAuth (Recommended for Multi-Account)**
 
-Add one or more Google accounts for load balancing:
+Add one or more Google accounts for load balancing.
+
+#### Desktop/Laptop (with browser)
 
 ```bash
+# If installed via npm
+antigravity-claude-proxy accounts add
+
+# If using npx
+npx antigravity-claude-proxy@latest accounts add
+
+# If cloned locally
 npm run accounts:add
 ```
 
 This opens your browser for Google OAuth. Sign in and authorize access. Repeat for multiple accounts.
 
-Manage accounts:
+#### Headless Server (Docker, SSH, no desktop)
+
+```bash
+# If installed via npm
+antigravity-claude-proxy accounts add --no-browser
+
+# If using npx
+npx antigravity-claude-proxy@latest accounts add -- --no-browser
+
+# If cloned locally
+npm run accounts:add -- --no-browser
+```
+
+This displays an OAuth URL you can open on another device (phone/laptop). After signing in, copy the redirect URL or authorization code and paste it back into the terminal.
+
+#### Manage accounts
 
 ```bash
 # List all accounts
-npm run accounts:list
+antigravity-claude-proxy accounts list
 
 # Verify accounts are working
-npm run accounts:verify
+antigravity-claude-proxy accounts verify
 
 # Interactive account management
-npm run accounts
+antigravity-claude-proxy accounts
 ```
 
-### 3. Start the Proxy Server
+### 2. Start the Proxy Server
 
 ```bash
+# If installed via npm
+antigravity-claude-proxy start
+
+# If using npx
+npx antigravity-claude-proxy@latest start
+
+# If cloned locally
 npm start
 ```
 
 The server runs on `http://localhost:8080` by default.
 
-### 4. Verify It's Working
+### 3. Verify It's Working
 
 ```bash
 # Health check
 curl http://localhost:8080/health
 
-# Check account status
-curl http://localhost:8080/accounts
+# Check account status and quota limits
+curl "http://localhost:8080/account-limits?format=table"
 ```
 
 ---
@@ -104,25 +161,80 @@ Add this configuration:
     "ANTHROPIC_MODEL": "claude-opus-4-5-thinking",
     "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4-5-thinking",
     "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-5-thinking",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-sonnet-4-5",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-opus-4-5-thinking"
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-2.5-flash-lite[1m]",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "claude-sonnet-4-5-thinking",
+    "ENABLE_EXPERIMENTAL_MCP_CLI": "true"
   }
 }
 ```
+
+(Please use **gemini-2.5-flash-lite** as the default haiku model, even if others are claude, as claude code makes several calls via the haiku model for background tasks. If you use claude model for it, you may use you claude usage sooner)
+
+Or to use Gemini models:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_AUTH_TOKEN": "test",
+    "ANTHROPIC_BASE_URL": "http://localhost:8080",
+    "ANTHROPIC_MODEL": "gemini-3-pro-high[1m]",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "gemini-3-pro-high[1m]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "gemini-3-flash[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "gemini-2.5-flash-lite[1m]",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "gemini-3-flash[1m]",
+    "ENABLE_EXPERIMENTAL_MCP_CLI": "true"
+  }
+}
+```
+
+### Load Environment Variables
+
+Add the proxy settings to your shell profile:
+
+**macOS / Linux:**
+
+```bash
+echo 'export ANTHROPIC_BASE_URL="http://localhost:8080"' >> ~/.zshrc
+echo 'export ANTHROPIC_AUTH_TOKEN="test"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+> For Bash users, replace `~/.zshrc` with `~/.bashrc`
+
+**Windows (PowerShell):**
+
+```powershell
+Add-Content $PROFILE "`n`$env:ANTHROPIC_BASE_URL = 'http://localhost:8080'"
+Add-Content $PROFILE "`$env:ANTHROPIC_AUTH_TOKEN = 'test'"
+. $PROFILE
+```
+
+**Windows (Command Prompt):**
+
+```cmd
+setx ANTHROPIC_BASE_URL "http://localhost:8080"
+setx ANTHROPIC_AUTH_TOKEN "test"
+```
+
+Restart your terminal for changes to take effect.
 
 ### Run Claude Code
 
 ```bash
 # Make sure the proxy is running first
-npm start
+antigravity-claude-proxy start
 
 # In another terminal, run Claude Code
 claude
 ```
 
+> **Note:** If Claude Code asks you to select a login method, add `"hasCompletedOnboarding": true` to `~/.claude.json` (macOS/Linux) or `%USERPROFILE%\.claude.json` (Windows), then restart your terminal and try again.
+
 ---
 
 ## Available Models
+
+### Claude Models
 
 | Model ID | Description |
 |----------|-------------|
@@ -130,9 +242,15 @@ claude
 | `claude-opus-4-5-thinking` | Claude Opus 4.5 with extended thinking |
 | `claude-sonnet-4-5` | Claude Sonnet 4.5 without thinking |
 
-Standard Anthropic model names are automatically mapped:
-- `claude-sonnet-4-5-20250514` → `claude-sonnet-4-5-thinking`
-- `claude-opus-4-5-20250514` → `claude-opus-4-5-thinking`
+### Gemini Models
+
+| Model ID | Description |
+|----------|-------------|
+| `gemini-3-flash` | Gemini 3 Flash with thinking |
+| `gemini-3-pro-low` | Gemini 3 Pro Low with thinking |
+| `gemini-3-pro-high` | Gemini 3 Pro High with thinking |
+
+Gemini models include full thinking support with `thoughtSignature` handling for multi-turn conversations.
 
 ---
 
@@ -149,7 +267,7 @@ When you add multiple accounts, the proxy automatically:
 Check account status anytime:
 
 ```bash
-curl http://localhost:8080/accounts
+curl "http://localhost:8080/account-limits?format=table"
 ```
 
 ---
@@ -159,7 +277,7 @@ curl http://localhost:8080/accounts
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/health` | GET | Health check |
-| `/accounts` | GET | Account pool status |
+| `/account-limits` | GET | Account status and quota limits (add `?format=table` for ASCII table) |
 | `/v1/messages` | POST | Anthropic Messages API |
 | `/v1/models` | GET | List available models |
 | `/refresh-token` | POST | Force token refresh |
@@ -285,7 +403,7 @@ If using single-account mode with Antigravity:
 1. Make sure Antigravity app is installed and running
 2. Ensure you're logged in to Antigravity
 
-Or add accounts via OAuth instead: `npm run accounts:add`
+Or add accounts via OAuth instead: `antigravity-claude-proxy accounts add`
 
 ### 401 Authentication Errors
 
@@ -296,7 +414,7 @@ curl -X POST http://localhost:8080/refresh-token
 
 Or re-authenticate the account:
 ```bash
-npm run accounts
+antigravity-claude-proxy accounts
 ```
 
 ### Rate Limiting (429)
@@ -307,7 +425,7 @@ With multiple accounts, the proxy automatically switches to the next available a
 
 Re-authenticate the account:
 ```bash
-npm run accounts
+antigravity-claude-proxy accounts
 # Choose "Re-authenticate" for the invalid account
 ```
 
@@ -372,4 +490,4 @@ MIT
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=badri-s2001/antigravity_claude_server&type=Date)](https://star-history.com/#badri-s2001/antigravity_claude_server&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=badrisnarayanan/antigravity-claude-proxy&type=date&legend=top-left&cache-control=no-cache)](https://www.star-history.com/#badrisnarayanan/antigravity-claude-proxy&type=date&legend=top-left)
